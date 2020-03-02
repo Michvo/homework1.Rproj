@@ -15,7 +15,7 @@ __3.a__ Transform the temperature from degrees Farhenheit to degrees Celsius.
 ```{r}
 # 3.a
 
-
+airquality <- airquality %>% mutate(Temp= ((Temp-32)*(5/9))
 
 ```
 

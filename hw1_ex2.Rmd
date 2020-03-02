@@ -19,7 +19,7 @@ __2.b__ Print out the mtcars data frame sorted by hp (descending order).
 # 2.b
 
 library(dplyr)
-arrange(mtcars, desc(hp))
+mtcars %>% arrange(desc(hp))  # Pipe down 
 ```
 
 __2.c__ Create a new object named `cars_cyl` and assign to it the `mtcars` data frame grouped by the number of cylinders.
@@ -27,10 +27,10 @@ __2.c__ Create a new object named `cars_cyl` and assign to it the `mtcars` data 
 ```{r}
 # 2.c
 
-cars_cyl <- mtcars
-select(cars_cyl) %>%
-group_by(cars_cyl$cyl) %>%
-summarise(mpg=mean(cars_cyl$mpg),disp=mean(cars_cyl$disp), hp=mean(cars_cyl$hp), drat=mean(cars_cyl$drat), wt=mean(cars_cyl$wt), qsec=mean(cars_cyl$qsec), vs=mean(cars_cyl$vs), am=mean(cars_cyl$am), gear=mean(cars_cyl$gear), carb=mean(cars_cyl$carb))
+cars_cyl <- mtcars %>%
+group_by(cyl) %>%
+arrange(cyl)
+
 
 # Use of tiblle might be easier ?tibble, sûrement faux :)
 # Filter ??
@@ -42,8 +42,7 @@ __2.d__ Modify `cars_cyl` to remove all variables except the average miles/(US) 
 ```{r}
 # 2.d
 
-cars_cyl[c(4,9)] %>%
-group_by(cars_cyl$cyl)
+cars_cyl <- cars_cyl %>% group_by(cyl) %>% select(cyl, hp, mpg)
 
 ```
 
@@ -52,9 +51,9 @@ What can you conclude about the effect of the number of cylinders on the other t
 
 ```{r}
 # 2.e
-select(cars_cyl) %>%
-group_by(cars_cyl$cyl) %>%
-summarise(hp=mean(cars_cyl$hp),mpg=mean(cars_cyl$mpg))
+cars_cyl %>%
+select(cyl, hp, mpg) %>%
+summarise(hp_mean=mean(hp),mpg_mean=mean(mpg))
 ```
 
 __2.f__ Improve the summary statistics by also displaying the median, the minimum, the maximum, the standard deviation and the count.
@@ -62,9 +61,9 @@ __2.f__ Improve the summary statistics by also displaying the median, the minimu
 ```{r}
 # 2.f
 
-summary(cars_cyl, median(cars_cyl), min(cars_cyl), max(cars_cyl), sd(cars_cyl), count(cars_cyl))
+summarize(cars_cyl, mean(hp), mean(mpg), median(hp), median(mpg), min(hp), min(mpg), max(hp), max(mpg), sd(hp), sd(mpg))
 
-# Sûrement faux, CHECK
+# Function Count ne fonctionne pas 
 ```
 
 __2.g__ Modify `cars_cyl` by adding a new variable called `perf = hp/mpg` and another
@@ -74,10 +73,11 @@ Print out the resulting table by decreasing performance.
 ```{r}
 # 2.g
 
-mutate(cars_cyl,
-perf = hp/mpg,
-rank= max(perf),
-desc(perf))
+cars_cyl <- cars_cyl %>% mutate(perf=hp/mpg,
+rank = rank(-perf)) %>%
+arrange(desc(perf))
+
+
 ```
 
 __2.h__ Print out the average performance for each 
@@ -85,8 +85,8 @@ number of cylinders. What can you say about the relationship between the two var
 
 ```{r}
 # 2.h
-carsperf <- group_by(cars_cyl, cyl)
-summarise(carsperf, cars_cyl$perf)
+
+cars_cyl %>% summarise(perf_mean=mean(perf))
 
 # Pourquoi il trouve pas perf ? 
 ```
@@ -96,10 +96,10 @@ __2.i__ Using the full dataset, plot the relationship between the weight and mil
 ```{r}
 # 2.i
 LR <- lm(wt~ mpg , data = mtcars)
-do (LR) {
-  with(cars_cyl$cyl = 4, 6, 8)
-    
-  }
+library(ggplot2)
+ggplot(data = mtcars, mapping = aes(x=wt, y=mpg), color=cyl) %>% 
+geom_point()
+
 
 # Faire la regression par catégorie de cylindre 
 
